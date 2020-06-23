@@ -5,6 +5,7 @@ from str import DBUser, DBPw
 conn = pymysql.connect(host='localhost', port=3306, user=DBUser, passwd=DBPw, database='warehouse')
 curs = conn.cursor()
 
+# TABLE
 curs.execute("CREATE TABLE IF NOT EXISTS d_code("
 			 "code VARCHAR(6) PRIMARY KEY,"
 			 "name VARCHAR(20) NULL);")
@@ -36,6 +37,7 @@ curs.execute("CREATE TABLE IF NOT EXISTS d_return("
 			 "return_number SMALLINT NULL,"
 			 "return_department VARCHAR(20) NULL);")
 
+# VIEW
 curs.execute("CREATE OR REPLACE VIEW out_return(code,date,number,department,type) AS "
 			 "SELECT code,out_date,out_number,department,'out' "
 			 "FROM d_out "
@@ -43,12 +45,24 @@ curs.execute("CREATE OR REPLACE VIEW out_return(code,date,number,department,type
 			 "SELECT code,return_date,return_number,return_department,'return' "
 			 "FROM d_return;")
 
-curs.execute(
-		"CREATE TRIGGER TRI_d_out_device "
-		"AFTER INSERT ON d_out "
-		"FOR EACH ROW "
-		"UPDATE device SET now_number = now_number - NEW.out_number WHERE code = NEW.code;")
+# TRIGGER
+curs.execute("CREATE TRIGGER TRI_d_out_device "
+			 "AFTER INSERT ON d_out "
+			 "FOR EACH ROW "
+			 "UPDATE device SET now_number = now_number - NEW.out_number "
+			 "				WHERE code = NEW.code;")
 
+curs.execute("CREATE TRIGGER TRI_d_return_device "
+			 "AFTER INSERT ON d_return "
+			 "FOR EACH ROW "
+			 "UPDATE device SET now_number = now_number + NEW.return_number "
+			 "				WHERE code = NEW.code;")
+
+curs.execute("CREATE TRIGGER TRI_d_in_device "
+			 "AFTER INSERT ON d_in "
+			 "FOR EACH ROW "
+			 "UPDATE device SET now_number = now_number + NEW.in_number , total_number = total_number + NEW.in_number"
+			 "				WHERE code = NEW.code;")
 
 # test
 # curs.execute("insert into d_out "
