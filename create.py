@@ -78,17 +78,17 @@ curs.execute("CREATE TRIGGER TRI_d_in_device "
 # test trigger
 sql = "INSERT INTO d_code VALUES(%s,%s);"
 data = [
-    ('001', 'Macbook Pro'),
-    ('002', 'iPad Pro 2020'),
-    ('003', 'iPhone 11 Max Pro')
+	('001', 'Macbook Pro'),
+	('002', 'iPad Pro 2020'),
+	('003', 'iPhone 11 Max Pro')
 ]
 # 拼接并执行sql语句
 curs.executemany(sql, data)
 sql = "INSERT INTO device VALUES(%s,%s,%s);"
 data = [
-    ('001',500,500),
-    ('002',600,600),
-    ('003',600,600)
+	('001', 500, 500),
+	('002', 600, 600),
+	('003', 600, 600)
 ]
 # 拼接并执行sql语句
 curs.executemany(sql, data)
@@ -97,53 +97,51 @@ conn.commit()
 
 curs.execute("SELECT * FROM d_code;")
 results = curs.fetchall()
-print("DEVICE INFO: ",end="")
+print("DEVICE INFO: ", end="")
 print(results)
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
-print("DEVICE INFO ",end="")
+print("DEVICE INFO ", end="")
 print(results)
-
 
 # # out
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
-print("\nBEFORE OUT ",end="")
+print("\nBEFORE OUT ", end="")
 print(results)
 curs.execute("INSERT INTO d_out VALUES('001','财务','2020-06-09','梅西',100,'C罗');")
 # 提交
 conn.commit()
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
-print("AFTER OUT ",end="")
+print("AFTER OUT ", end="")
 print(results)
 
 # # return
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
-print("\nBEFORE RETURN ",end="")
+print("\nBEFORE RETURN ", end="")
 print(results)
 curs.execute("INSERT INTO d_return VALUES('001','2020-06-09',100,'财务');")
 # 提交
 conn.commit()
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
-print("AFTER RETURN ",end="")
+print("AFTER RETURN ", end="")
 print(results)
 
 # # in
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
-print("\nBEFORE IN ",end="")
+print("\nBEFORE IN ", end="")
 print(results)
 curs.execute("INSERT INTO d_in VALUES('001','2020-06-09','Apple',20,6999,'Tony');")
 # 提交
 conn.commit()
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
-print("AFTER IN ",end="")
+print("AFTER IN ", end="")
 print(results)
-
 
 curs.close()
 conn.close()
