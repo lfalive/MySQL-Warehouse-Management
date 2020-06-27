@@ -47,8 +47,7 @@ def now_d_click():
 
 	# 给表格中添加数据
 	for i in range(len(results)):
-		form.insert('', i + 1, text=str(i + 1),
-					values=(results[i][0], results[i][1], results[i][2], results[i][3]))
+		form.insert('', i + 1, values=list(results[i]))
 
 
 def in_click():
@@ -179,21 +178,19 @@ def query_d_click():
 	window_in.title('按设备查询出入库记录')
 	window_in.resizable(False, False)
 
-	def query_d(d_code):
+	def query_d():
 		sql = ("SELECT in_out_return.*,d_code.name "
 			   "FROM in_out_return,d_code "
 			   "WHERE in_out_return.code=%s AND in_out_return.code=d_code.code "
 			   "ORDER BY date;")
-		curs.execute(sql, d_code)
+		curs.execute(sql, var_d_code.get())
 		results = curs.fetchall()
 
 		# 先清空，再给表格中添加数据
 		for item in form.get_children():
 			form.delete(item)
 		for i in range(len(results)):
-			form.insert('', i + 1, text=str(i + 1),
-						values=(results[i][0], results[i][1], results[i][2], results[i][3], results[i][4],
-								results[i][5], results[i][6]))
+			form.insert('', i + 1, values=list(results[i]))
 
 	var_d_code = StringVar()
 
@@ -201,7 +198,7 @@ def query_d_click():
 	fm_in.pack(side=TOP, padx=50, pady=10)
 	Label(fm_in, text='设备编号:', font=('', 14)).pack(side=LEFT)
 	Entry(fm_in, textvariable=var_d_code, font=('', 14)).pack(side=LEFT)
-	Button(fm_in, text='查询', font=('', 12), command=lambda: query_d(var_d_code.get())).pack(side=LEFT, padx=20)
+	Button(fm_in, text='查询', font=('', 12), command=query_d).pack(side=LEFT, padx=20)
 
 	# 创建表格
 	form = ttk.Treeview(window_in, show="headings",
@@ -233,21 +230,19 @@ def query_dp_click():
 	window_in.title('按部门查询出入库记录')
 	window_in.resizable(False, False)
 
-	def query_dp(depart):
+	def query_dp():
 		sql = ("SELECT in_out_return.*,d_code.name "
 			   "FROM in_out_return,d_code "
 			   "WHERE in_out_return.department=%s AND in_out_return.code=d_code.code "
 			   "ORDER BY date;")
-		curs.execute(sql, depart)
+		curs.execute(sql, var_d_depart.get())
 		results = curs.fetchall()
 
 		# 先清空，再给表格中添加数据
 		for item in form.get_children():
 			form.delete(item)
 		for i in range(len(results)):
-			form.insert('', i + 1, text=str(i + 1),
-						values=(results[i][0], results[i][1], results[i][2], results[i][3], results[i][4],
-								results[i][5], results[i][6]))
+			form.insert('', i + 1, values=list(results[i]))
 
 	var_d_depart = StringVar()
 
@@ -255,7 +250,7 @@ def query_dp_click():
 	fm_in.pack(side=TOP, padx=50, pady=10)
 	Label(fm_in, text='部门名称:', font=('', 14)).pack(side=LEFT)
 	Entry(fm_in, textvariable=var_d_depart, font=('', 14)).pack(side=LEFT)
-	Button(fm_in, text='查询', font=('', 12), command=lambda: query_dp(var_d_depart.get())).pack(side=LEFT, padx=20)
+	Button(fm_in, text='查询', font=('', 12), command=query_dp).pack(side=LEFT, padx=20)
 
 	# 创建表格
 	form = ttk.Treeview(window_in, show="headings",
