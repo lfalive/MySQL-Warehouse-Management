@@ -38,12 +38,18 @@ curs.execute("CREATE TABLE IF NOT EXISTS d_return("
 			 "return_department VARCHAR(20) NULL);")
 
 # VIEW
-curs.execute("CREATE OR REPLACE VIEW out_return(code,date,number,department,type) AS "
-			 "SELECT code,out_date,out_number,department,'out' "
-			 "FROM d_out "
+curs.execute("CREATE OR REPLACE VIEW in_out_return(code,name,type,date,number,department) AS "
+			 "SELECT OP.code,d_code.name,'in',OP.in_date,OP.in_number,'-' "
+			 "FROM d_in OP,d_code "
+			 "WHERE OP.code=d_code.code "
 			 "UNION "
-			 "SELECT code,return_date,return_number,return_department,'return' "
-			 "FROM d_return;")
+			 "SELECT OP.code,d_code.name,'out',OP.out_date,OP.out_number,OP.department "
+			 "FROM d_out OP,d_code "
+			 "WHERE OP.code=d_code.code "
+			 "UNION "
+			 "SELECT OP.code,d_code.name,'return',OP.return_date,OP.return_number,OP.return_department "
+			 "FROM d_return OP,d_code "
+			 "WHERE OP.code=d_code.code ;")
 
 # TRIGGER
 curs.execute("CREATE TRIGGER TRI_d_out_device "
