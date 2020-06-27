@@ -12,19 +12,21 @@ curs.execute("CREATE TABLE IF NOT EXISTS d_code("
 
 curs.execute("CREATE TABLE IF NOT EXISTS d_in("
 			 "code VARCHAR(6) NOT NULL REFERENCES d_code(code),"
-			 "in_date DATE PRIMARY KEY,"
+			 "in_date DATE,"
 			 "provider VARCHAR(20) NULL,"
 			 "in_number SMALLINT NULL,"
 			 "price SMALLINT NULL,"
-			 "buyer VARCHAR(10) NULL);")
+			 "buyer VARCHAR(10) NULL,"
+			 "submitdate timestamp PRIMARY KEY NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);")
 
 curs.execute("CREATE TABLE IF NOT EXISTS d_out("
 			 "code VARCHAR(6) NOT NULL REFERENCES d_code(code),"
 			 "department VARCHAR(20) NULL,"
-			 "out_date DATE PRIMARY KEY,"
+			 "out_date DATE,"
 			 "out_person VARCHAR(10) NULL,"
 			 "out_number SMALLINT NOT NULL,"
-			 "taker VARCHAR(10) NULL);")
+			 "taker VARCHAR(10) NULL,"
+			 "submitdate timestamp PRIMARY KEY NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);")
 
 curs.execute("CREATE TABLE IF NOT EXISTS device("
 			 "code VARCHAR(6) PRIMARY KEY REFERENCES d_code(code),"
@@ -33,13 +35,14 @@ curs.execute("CREATE TABLE IF NOT EXISTS device("
 
 curs.execute("CREATE TABLE IF NOT EXISTS d_return("
 			 "code VARCHAR(6) NOT NULL REFERENCES d_code(code),"
-			 "return_date DATE PRIMARY KEY,"
+			 "return_date DATE,"
 			 "return_number SMALLINT NULL,"
-			 "return_department VARCHAR(20) NULL);")
+			 "return_department VARCHAR(20) NULL,"
+			 "submitdate timestamp PRIMARY KEY NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);")
 
 # VIEW
-curs.execute("CREATE OR REPLACE VIEW in_out_return(code,name,type,date,number,department) AS "
-			 "SELECT OP.code,d_code.name,'in',OP.in_date,OP.in_number,'-' "
+curs.execute("CREATE OR REPLACE VIEW in_out_return(code,name,type,date,number,department_or_provider) AS "
+			 "SELECT OP.code,d_code.name,'in',OP.in_date,OP.in_number,OP.provider "
 			 "FROM d_in OP,d_code "
 			 "WHERE OP.code=d_code.code "
 			 "UNION "
@@ -115,7 +118,7 @@ curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
 print("\nBEFORE OUT ", end="")
 print(results)
-curs.execute("INSERT INTO d_out VALUES('001','财务','2020-06-09','梅西',100,'C罗');")
+curs.execute("INSERT INTO d_out(code,department,out_date,out_person,out_number,taker) VALUES('001','财务','2020-06-09','梅西',100,'C罗');")
 # 提交
 conn.commit()
 curs.execute("SELECT * FROM device;")
@@ -128,7 +131,7 @@ curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
 print("\nBEFORE RETURN ", end="")
 print(results)
-curs.execute("INSERT INTO d_return VALUES('001','2020-06-09',100,'财务');")
+curs.execute("INSERT INTO d_return(code, return_date, return_number, return_department) VALUES('001','2020-06-09',100,'财务');")
 # 提交
 conn.commit()
 curs.execute("SELECT * FROM device;")
@@ -141,7 +144,7 @@ curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
 print("\nBEFORE IN ", end="")
 print(results)
-curs.execute("INSERT INTO d_in VALUES('001','2020-06-09','Apple',20,6999,'Tony');")
+curs.execute("INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) VALUES('001','2020-06-09','Apple',20,6999,'Tony');")
 # 提交
 conn.commit()
 curs.execute("SELECT * FROM device;")
