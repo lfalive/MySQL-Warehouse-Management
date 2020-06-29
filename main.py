@@ -404,7 +404,7 @@ def on_closing():
 
 fm = Frame(main_window)
 fm.pack(side=TOP)
-button_style = {'font': "(\'\',15)", 'width': '25', 'height': 4}
+button_style = {'font': "(\'\',15)", 'width': 25, 'height': 4}
 
 Button(fm, text='当前库存', command=now_d_click, **button_style).grid(row=0, column=0, padx=20, pady=18)
 Button(fm, text='设备登记', command=insert_click, **button_style).grid(row=0, column=1, padx=20, pady=18)
