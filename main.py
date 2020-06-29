@@ -122,15 +122,30 @@ def out_click():
 	Label(window_in, text='领取人', font=('', 10)).place(x=240, y=300, anchor="ne")
 
 	def out_submit():
-		sql = ("INSERT INTO d_out(code, department, out_date, out_person, out_number, taker) "
-			   "VALUES(%s,%s,%s,%s,%s,%s);")
-		values = (ecode.get(), edepart.get(), eoutdate.get(), eout_person.get(),
-				  int(eout_number.get()), etaker.get())
-		curs.execute(sql, values)
-		conn.commit()
+		try:
+			sql = ("INSERT INTO d_out(code, department, out_date, out_person, out_number, taker) "
+				   "VALUES(%s,%s,%s,%s,%s,%s);")
+			values = (ecode.get(), edepart.get(), eoutdate.get(), eout_person.get(),
+					  int(eout_number.get()), etaker.get())
+			curs.execute(sql, values)
+			conn.commit()
 
-		messagebox.showinfo(title='Hi', message="提交完成！")
-		window_in.destroy()
+			messagebox.showinfo(title='Hi', message="提交完成！")
+			window_in.destroy()
+		except Exception as e:
+			conn.rollback()
+			conn.commit()
+			print(e)
+			# 判断错误类型
+			if str(e).split(',')[0][1:] == "1690":
+				messagebox.showinfo(title='Hi', message="提交失败,库存不足！")
+			elif str(e).split(',')[0][1:] == "1292":
+				messagebox.showinfo(title='Hi', message="提交失败,日期格式错误！")
+			elif str(e).split(',')[0][1:] == "1452":
+				messagebox.showinfo(title='Hi', message="提交失败,无该设备！")
+			else:
+				messagebox.showinfo(title='Hi', message="提交失败,检查后重新提交！")
+			window_in.destroy()
 
 	b_submit = Button(window_in, text='提交', font=('', 10), width=10, height=2, command=out_submit)
 	b_submit.pack(side=BOTTOM, pady=18)

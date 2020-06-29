@@ -1,5 +1,5 @@
 import pymysql
-
+import time
 from str import DBUser, DBPw
 
 conn = pymysql.connect(host='localhost', port=3306, user=DBUser, passwd=DBPw, database='warehouse')
@@ -11,34 +11,37 @@ curs.execute("CREATE TABLE IF NOT EXISTS d_code("
 			 "name VARCHAR(20) NULL);")
 
 curs.execute("CREATE TABLE IF NOT EXISTS d_in("
-			 "code VARCHAR(6) NOT NULL REFERENCES d_code(code),"
+			 "code VARCHAR(6) NOT NULL,"
 			 "in_date DATE,"
 			 "provider VARCHAR(20) NULL,"
 			 "in_number SMALLINT NULL,"
 			 "price SMALLINT NULL,"
 			 "buyer VARCHAR(10) NULL,"
-			 "submitdate timestamp PRIMARY KEY DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);")
+			 "submitdate timestamp PRIMARY KEY DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+			 "FOREIGN KEY (code) REFERENCES d_code(code));")
 
 curs.execute("CREATE TABLE IF NOT EXISTS d_out("
-			 "code VARCHAR(6) NOT NULL REFERENCES d_code(code),"
+			 "code VARCHAR(6) NOT NULL,"
 			 "department VARCHAR(20) NULL,"
 			 "out_date DATE,"
 			 "out_person VARCHAR(10) NULL,"
 			 "out_number SMALLINT NOT NULL,"
 			 "taker VARCHAR(10) NULL,"
-			 "submitdate timestamp PRIMARY KEY DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);")
+			 "submitdate timestamp PRIMARY KEY DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+			 "FOREIGN KEY (code) REFERENCES d_code(code));")
 
 curs.execute("CREATE TABLE IF NOT EXISTS device("
 			 "code VARCHAR(6) PRIMARY KEY REFERENCES d_code(code),"
-			 "now_number SMALLINT NULL,"
-			 "total_number SMALLINT NULL);")
+			 "now_number SMALLINT UNSIGNED NULL,"
+			 "total_number SMALLINT UNSIGNED NULL);")
 
 curs.execute("CREATE TABLE IF NOT EXISTS d_return("
-			 "code VARCHAR(6) NOT NULL REFERENCES d_code(code),"
+			 "code VARCHAR(6) NOT NULL,"
 			 "return_date DATE,"
 			 "return_number SMALLINT NULL,"
 			 "return_department VARCHAR(20) NULL,"
-			 "submitdate timestamp PRIMARY KEY DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);")
+			 "submitdate timestamp PRIMARY KEY DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+			 "FOREIGN KEY (code) REFERENCES d_code(code));")
 
 # VIEW
 curs.execute("CREATE OR REPLACE VIEW in_out_return(code,name,type,date,number,department,provider) AS "
@@ -91,9 +94,9 @@ data = [
 curs.executemany(sql, data)
 sql = "INSERT INTO device VALUES(%s,%s,%s);"
 data = [
-	('001', 500, 500),
-	('002', 600, 600),
-	('003', 600, 600)
+	('001', 0, 0),
+	('002', 0, 0),
+	('003', 0, 0)
 ]
 # 拼接并执行sql语句
 curs.executemany(sql, data)
@@ -108,6 +111,31 @@ curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
 print("DEVICE INFO ", end="")
 print(results)
+
+# in
+curs.execute("SELECT * FROM device;")
+results = curs.fetchall()
+print("\nBEFORE IN ", end="")
+print(results)
+curs.execute(
+	"INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) "
+	"VALUES('001','2020-06-09','Apple',600,6999,'Tony');")
+time.sleep(1)
+curs.execute(
+	"INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) "
+	"VALUES('002','2020-06-09','Apple',600,8999,'Tony');")
+time.sleep(1)
+curs.execute(
+	"INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) "
+	"VALUES('003','2020-06-09','Apple',600,9999,'Tony');")
+time.sleep(1)
+# 提交
+conn.commit()
+curs.execute("SELECT * FROM device;")
+results = curs.fetchall()
+print("AFTER IN ", end="")
+print(results)
+
 
 # # out
 curs.execute("SELECT * FROM device;")
@@ -136,21 +164,6 @@ conn.commit()
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
 print("AFTER RETURN ", end="")
-print(results)
-
-# in
-curs.execute("SELECT * FROM device;")
-results = curs.fetchall()
-print("\nBEFORE IN ", end="")
-print(results)
-curs.execute(
-	"INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) "
-	"VALUES('001','2020-06-09','Apple',20,6999,'Tony');")
-# 提交
-conn.commit()
-curs.execute("SELECT * FROM device;")
-results = curs.fetchall()
-print("AFTER IN ", end="")
 print(results)
 
 # test view
