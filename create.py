@@ -1,5 +1,7 @@
-import pymysql
 import time
+
+import pymysql
+
 from str import DBUser, DBPw
 
 conn = pymysql.connect(host='localhost', port=3306, user=DBUser, passwd=DBPw, database='warehouse')
@@ -8,7 +10,7 @@ curs = conn.cursor()
 # TABLE
 curs.execute("CREATE TABLE IF NOT EXISTS d_code("
 			 "code VARCHAR(6) PRIMARY KEY,"
-			 "name VARCHAR(20) NULL);")
+			 "name VARCHAR(20) NOT NULL UNIQUE);")
 
 curs.execute("CREATE TABLE IF NOT EXISTS d_in("
 			 "code VARCHAR(6) NOT NULL,"
@@ -49,11 +51,11 @@ curs.execute("CREATE OR REPLACE VIEW in_out_return(code,name,type,date,number,de
 			 "FROM d_in OP,d_code "
 			 "WHERE OP.code=d_code.code "
 			 "UNION "
-			 "SELECT OP.code,d_code.name,'借出',OP.out_date,OP.out_number,OP.department,'NONE' "
+			 "SELECT OP.code,d_code.name,'借用设备',OP.out_date,OP.out_number,OP.department,'NONE' "
 			 "FROM d_out OP,d_code "
 			 "WHERE OP.code=d_code.code "
 			 "UNION "
-			 "SELECT OP.code,d_code.name,'归还',OP.return_date,OP.return_number,OP.return_department,'NONE' "
+			 "SELECT OP.code,d_code.name,'归还设备',OP.return_date,OP.return_number,OP.return_department,'NONE' "
 			 "FROM d_return OP,d_code "
 			 "WHERE OP.code=d_code.code ;")
 
@@ -135,7 +137,6 @@ curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
 print("AFTER IN ", end="")
 print(results)
-
 
 # # out
 curs.execute("SELECT * FROM device;")

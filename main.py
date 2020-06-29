@@ -11,10 +11,10 @@ curs = conn.cursor()
 
 main_window = Tk()
 main_window.title('仓库数据管理系统')
-main_window.geometry('850x700')
+main_window.geometry('850x720')
 main_window.resizable(False, False)
 
-Label(main_window, text='欢迎使用仓库管理系统', font=('', 40)).pack(side=TOP, pady=50)
+Label(main_window, text='欢迎使用仓库管理系统', font=('', 34)).pack(side=TOP, pady=35)
 
 
 def now_d_click():
@@ -48,6 +48,55 @@ def now_d_click():
 	# 给表格中添加数据
 	for i in range(len(results)):
 		form.insert('', i + 1, values=list(results[i]))
+
+
+def insert_click():
+	window_in = Toplevel(main_window)
+	window_in.geometry('500x350')
+	window_in.title('设备登记')
+	window_in.resizable(False, False)
+
+	def query_d_code():
+		if var_d_name.get().strip() != '' and var_d_code.get().strip() != '':
+			sql = "INSERT INTO d_code VALUES (%s,%s);"
+			values = (var_d_code.get(), var_d_name.get())
+			curs.execute(sql, values)
+			conn.commit()
+
+		curs.execute("SELECT * FROM d_code ORDER BY code;")
+		results = curs.fetchall()
+
+		# 先清空，再给表格中添加数据
+		for item in form.get_children():
+			form.delete(item)
+		for i in range(len(results)):
+			form.insert('', i + 1, values=list(results[i]))
+
+	var_d_code = StringVar()
+	var_d_name = StringVar()
+
+	fm_in = Frame(window_in)
+	fm_in.pack(side=TOP, padx=50, pady=10)
+
+	Label(fm_in, text='新设备编号:', font=('', 14)).grid(row=0, column=0, pady=5)
+	Entry(fm_in, textvariable=var_d_code, font=('', 14)).grid(row=0, column=1, padx=10)
+	Label(fm_in, text='新设备名称:', font=('', 14)).grid(row=1, column=0, pady=5)
+	Entry(fm_in, textvariable=var_d_name, font=('', 14)).grid(row=1, column=1)
+	Button(fm_in, text='添加', font=('', 12), command=query_d_code).grid(row=0, rowspan=2, column=2, pady=5, sticky=N + S)
+
+	# 创建表格
+	form = ttk.Treeview(window_in, show="headings", columns=('code', 'name'))
+	form.pack(side=TOP, pady=10)
+
+	# 设置列宽度
+	form.column('code', width=80)
+	form.column('name', width=180)
+
+	# 添加列名
+	form.heading('code', text='设备编号')
+	form.heading('name', text='设备名称')
+
+	query_d_code()
 
 
 def in_click():
@@ -189,7 +238,7 @@ def return_click():
 
 def query_d_click():
 	window_in = Toplevel(main_window)
-	window_in.geometry('800x600')
+	window_in.geometry('800x400')
 	window_in.title('按设备查询出入库记录')
 	window_in.resizable(False, False)
 
@@ -198,7 +247,7 @@ def query_d_click():
 			   "FROM in_out_return,d_code "
 			   "WHERE in_out_return.code=%s AND in_out_return.code=d_code.code "
 			   "ORDER BY date;")
-		curs.execute(sql, var_d_code.get())
+		curs.execute(sql, var_code.get())
 		results = curs.fetchall()
 
 		# 先清空，再给表格中添加数据
@@ -207,12 +256,12 @@ def query_d_click():
 		for i in range(len(results)):
 			form.insert('', i + 1, values=list(results[i]))
 
-	var_d_code = StringVar()
+	var_code = StringVar()
 
 	fm_in = Frame(window_in)
 	fm_in.pack(side=TOP, padx=50, pady=10)
 	Label(fm_in, text='设备编号:', font=('', 14)).pack(side=LEFT)
-	Entry(fm_in, textvariable=var_d_code, font=('', 14)).pack(side=LEFT)
+	Entry(fm_in, textvariable=var_code, font=('', 14)).pack(side=LEFT)
 	Button(fm_in, text='查询', font=('', 12), command=query_d).pack(side=LEFT, padx=20)
 
 	# 创建表格
@@ -241,7 +290,7 @@ def query_d_click():
 
 def query_dp_click():
 	window_in = Toplevel(main_window)
-	window_in.geometry('800x600')
+	window_in.geometry('800x400')
 	window_in.title('按部门查询出入库记录')
 	window_in.resizable(False, False)
 
@@ -250,7 +299,7 @@ def query_dp_click():
 			   "FROM in_out_return,d_code "
 			   "WHERE in_out_return.department=%s AND in_out_return.code=d_code.code "
 			   "ORDER BY date;")
-		curs.execute(sql, var_d_depart.get())
+		curs.execute(sql, var_depart.get())
 		results = curs.fetchall()
 
 		# 先清空，再给表格中添加数据
@@ -259,12 +308,12 @@ def query_dp_click():
 		for i in range(len(results)):
 			form.insert('', i + 1, values=list(results[i]))
 
-	var_d_depart = StringVar()
+	var_depart = StringVar()
 
 	fm_in = Frame(window_in)
 	fm_in.pack(side=TOP, padx=50, pady=10)
 	Label(fm_in, text='部门名称:', font=('', 14)).pack(side=LEFT)
-	Entry(fm_in, textvariable=var_d_depart, font=('', 14)).pack(side=LEFT)
+	Entry(fm_in, textvariable=var_depart, font=('', 14)).pack(side=LEFT)
 	Button(fm_in, text='查询', font=('', 12), command=query_dp).pack(side=LEFT, padx=20)
 
 	# 创建表格
@@ -291,6 +340,61 @@ def query_dp_click():
 	form.heading('provider', text='供应商')
 
 
+def query_op_click():
+	window_in = Toplevel(main_window)
+	window_in.geometry('800x400')
+	window_in.title('按操作类型查询记录出入库记录')
+	window_in.resizable(False, False)
+
+	def query_op():
+		sql = ("SELECT in_out_return.*,d_code.name "
+			   "FROM in_out_return,d_code "
+			   "WHERE in_out_return.type=%s AND in_out_return.code=d_code.code "
+			   "ORDER BY date;")
+		curs.execute(sql, var_op.get())
+		results = curs.fetchall()
+
+		# 先清空，再给表格中添加数据
+		for item in form.get_children():
+			form.delete(item)
+		for i in range(len(results)):
+			form.insert('', i + 1, values=list(results[i]))
+
+	var_op = StringVar()
+	var_op.set('采购入库')
+
+	fm_in = Frame(window_in)
+	fm_in.pack(side=TOP, padx=50, pady=10)
+	Radiobutton(fm_in, text='采购入库', variable=var_op, value='采购入库', command=query_op).pack(side=LEFT)
+	Radiobutton(fm_in, text='借用设备', variable=var_op, value='借用设备', command=query_op).pack(side=LEFT)
+	Radiobutton(fm_in, text='归还设备', variable=var_op, value='归还设备', command=query_op).pack(side=LEFT)
+
+	# 创建表格
+	form = ttk.Treeview(window_in, show="headings",
+						columns=('code', 'name', 'type', 'date', 'number', 'department', 'provider'))
+	form.pack(side=TOP, pady=10)
+
+	# 设置列宽度
+	form.column('code', width=80)
+	form.column('name', width=180)
+	form.column('type', width=80)
+	form.column('date', width=150)
+	form.column('number', width=80)
+	form.column('department', width=100)
+	form.column('provider', width=100)
+
+	# 添加列名
+	form.heading('code', text='设备编号')
+	form.heading('name', text='设备名称')
+	form.heading('type', text='操作类型')
+	form.heading('date', text='时间')
+	form.heading('number', text='数量')
+	form.heading('department', text='部门')
+	form.heading('provider', text='供应商')
+
+	query_op()
+
+
 # 关闭窗口前先断开数据库连接
 def on_closing():
 	curs.close()
@@ -299,25 +403,17 @@ def on_closing():
 
 
 fm = Frame(main_window)
-fm.pack(side=TOP, pady=10)
+fm.pack(side=TOP)
+button_style = {'font': "(\'\',15)", 'width': '25', 'height': 4}
 
-b1 = Button(fm, text='当前库存', font=('', 15), width=25, height=4, command=now_d_click)
-b1.grid(row=0, column=0, padx=20, pady=20)
-
-b2 = Button(fm, text='采购入库', font=('', 15), width=25, height=4, command=in_click)
-b2.grid(row=0, column=1, padx=20, pady=20)
-
-b3 = Button(fm, text='借用设备', font=('', 15), width=25, height=4, command=out_click)
-b3.grid(row=1, column=0, padx=20, pady=20)
-
-b4 = Button(fm, text='归还设备', font=('', 15), width=25, height=4, command=return_click)
-b4.grid(row=1, column=1, padx=20, pady=20)
-
-b5 = Button(fm, text='按设备查询', font=('', 15), width=25, height=4, command=query_d_click)
-b5.grid(row=2, column=0, padx=20, pady=20)
-
-b6 = Button(fm, text='按部门查询', font=('', 15), width=25, height=4, command=query_dp_click)
-b6.grid(row=2, column=1, padx=20, pady=20)
+Button(fm, text='当前库存', command=now_d_click, **button_style).grid(row=0, column=0, padx=20, pady=18)
+Button(fm, text='设备登记', command=insert_click, **button_style).grid(row=0, column=1, padx=20, pady=18)
+Button(fm, text='采购入库', command=in_click, **button_style).grid(row=1, column=0, padx=20, pady=18)
+Button(fm, text='借用设备', command=out_click, **button_style).grid(row=1, column=1, padx=20, pady=18)
+Button(fm, text='归还设备', command=return_click, **button_style).grid(row=2, column=0, padx=20, pady=18)
+Button(fm, text='按设备查询', command=query_d_click, **button_style).grid(row=2, column=1, padx=20, pady=18)
+Button(fm, text='按部门查询', command=query_dp_click, **button_style).grid(row=3, column=0, padx=20, pady=18)
+Button(fm, text='按操作查询', command=query_op_click, **button_style).grid(row=3, column=1, padx=20, pady=18)
 
 info = Label(main_window, text='通信中英1701班，吴警彤 & 胡力夫', font=('microsoft yahei', 15))
 info.pack(side=BOTTOM, pady=8)
