@@ -128,15 +128,31 @@ def in_click():
 	Label(window_in, text='采购员', font=('', 10)).place(x=240, y=300, anchor="ne")
 
 	def in_submit():
-		sql = ("INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) "
-			   "VALUES(%s,%s,%s,%s,%s,%s);")
-		values = (ecode.get(), eindate.get(), eprovider.get(), int(ein_number.get()),
-				  int(eprice.get()), ebuyer.get())
-		curs.execute(sql, values)
-		conn.commit()
+		try:
+			sql = ("INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) "
+				   "VALUES(%s,%s,%s,%s,%s,%s);")
+			values = (ecode.get(), eindate.get(), eprovider.get(), int(ein_number.get()),
+					  int(eprice.get()), ebuyer.get())
+			curs.execute(sql, values)
+			conn.commit()
+			messagebox.showinfo(title='Success', message="提交完成！")
+			window_in.destroy()
+		except Exception as e:
+			print(e)
+			# print(str(e))
+			conn.rollback()
+			conn.commit()
+			if str(e).split(':')[0] == "invalid literal for int() with base 10":
+				messagebox.showinfo(title='Failed', message="提交失败,请输入数字！")
+			elif str(e).split(',')[0][1:] == "1292":
+				messagebox.showinfo(title='Failed', message="提交失败,日期格式错误！")
+			elif str(e).split(',')[0][1:] == "1452":
+				messagebox.showinfo(title='Failed', message="提交失败,无该设备,请先登记！")
+			else:
+				messagebox.showinfo(title='Failed', message="提交失败,检查后重新提交！")
+			window_in.destroy()
 
-		messagebox.showinfo(title='Hi', message="提交完成！")
-		window_in.destroy()
+
 
 	b_submit = Button(window_in, text='提交', font=('', 10), width=10, height=2, command=in_submit)
 	b_submit.pack(side=BOTTOM, pady=18)
@@ -179,7 +195,7 @@ def out_click():
 			curs.execute(sql, values)
 			conn.commit()
 
-			messagebox.showinfo(title='Hi', message="提交完成！")
+			messagebox.showinfo(title='Success', message="提交完成！")
 			window_in.destroy()
 		except Exception as e:
 			conn.rollback()
@@ -187,13 +203,13 @@ def out_click():
 			print(e)
 			# 判断错误类型
 			if str(e).split(',')[0][1:] == "1690":
-				messagebox.showinfo(title='Hi', message="提交失败,库存不足！")
+				messagebox.showinfo(title='Failed', message="提交失败,库存不足！")
 			elif str(e).split(',')[0][1:] == "1292":
-				messagebox.showinfo(title='Hi', message="提交失败,日期格式错误！")
+				messagebox.showinfo(title='Failed', message="提交失败,日期格式错误！")
 			elif str(e).split(',')[0][1:] == "1452":
-				messagebox.showinfo(title='Hi', message="提交失败,无该设备！")
+				messagebox.showinfo(title='Failed', message="提交失败,无该设备！")
 			else:
-				messagebox.showinfo(title='Hi', message="提交失败,检查后重新提交！")
+				messagebox.showinfo(title='Failed', message="提交失败,检查后重新提交！")
 			window_in.destroy()
 
 	b_submit = Button(window_in, text='提交', font=('', 10), width=10, height=2, command=out_submit)
@@ -223,14 +239,30 @@ def return_click():
 	Label(window_in, text='归还部门', font=('', 10)).place(x=240, y=200, anchor="ne")
 
 	def return_submit():
-		sql = ("INSERT INTO d_return(code, return_date, return_number, return_department) "
-			   "VALUES(%s,%s,%s,%s);")
-		values = (ecode.get(), ereturndate.get(), ereturn_number.get(), ereturn_depart.get())
-		curs.execute(sql, values)
-		conn.commit()
+		try:
+			sql = ("INSERT INTO d_return(code, return_date, return_number, return_department) "
+				   "VALUES(%s,%s,%s,%s);")
+			values = (ecode.get(), ereturndate.get(), ereturn_number.get(), ereturn_depart.get())
+			curs.execute(sql, values)
+			conn.commit()
 
-		messagebox.showinfo(title='Hi', message="提交完成！")
-		window_in.destroy()
+			messagebox.showinfo(title='Success', message="提交完成！")
+			window_in.destroy()
+		except Exception as e:
+			print(e)
+			# print(str(e))
+			conn.rollback()
+			conn.commit()
+			if str(e).split(':')[0] == "invalid literal for int() with base 10":
+				messagebox.showinfo(title='Failed', message="提交失败,请输入数字！")
+			elif str(e).split(',')[0][1:] == "1292":
+				messagebox.showinfo(title='Failed', message="提交失败,日期格式错误！")
+			elif str(e).split(',')[0][1:] == "1452":
+				messagebox.showinfo(title='Failed', message="提交失败,无该设备,请先登记！")
+			else:
+				messagebox.showinfo(title='Failed', message="提交失败,检查后重新提交！")
+			window_in.destroy()
+
 
 	b_submit = Button(window_in, text='提交', font=('', 10), width=10, height=2, command=return_submit)
 	b_submit.pack(side=BOTTOM, pady=18)
@@ -249,12 +281,16 @@ def query_d_click():
 			   "ORDER BY date;")
 		curs.execute(sql, var_code.get())
 		results = curs.fetchall()
-
-		# 先清空，再给表格中添加数据
-		for item in form.get_children():
-			form.delete(item)
-		for i in range(len(results)):
-			form.insert('', i + 1, values=list(results[i]))
+		if len(results) != 0:
+			# 先清空，再给表格中添加数据
+			for item in form.get_children():
+				form.delete(item)
+			for i in range(len(results)):
+				form.insert('', i + 1, values=list(results[i]))
+		elif len(results) == 0:
+			for item in form.get_children():
+				form.delete(item)
+			messagebox.showinfo(title='Notice', message="没有该设备！")
 
 	var_code = StringVar()
 
@@ -301,13 +337,16 @@ def query_dp_click():
 			   "ORDER BY date;")
 		curs.execute(sql, var_depart.get())
 		results = curs.fetchall()
-
-		# 先清空，再给表格中添加数据
-		for item in form.get_children():
-			form.delete(item)
-		for i in range(len(results)):
-			form.insert('', i + 1, values=list(results[i]))
-
+		if len(results) != 0:
+			# 先清空，再给表格中添加数据
+			for item in form.get_children():
+				form.delete(item)
+			for i in range(len(results)):
+				form.insert('', i + 1, values=list(results[i]))
+		elif len(results) == 0:
+			for item in form.get_children():
+				form.delete(item)
+			messagebox.showinfo(title='Notice', message="该部门无借还记录！")
 	var_depart = StringVar()
 
 	fm_in = Frame(window_in)
@@ -347,18 +386,24 @@ def query_op_click():
 	window_in.resizable(False, False)
 
 	def query_op():
-		sql = ("SELECT in_out_return.*,d_code.name "
-			   "FROM in_out_return,d_code "
-			   "WHERE in_out_return.type=%s AND in_out_return.code=d_code.code "
+		sql = ("SELECT in_out_return.* "
+			   "FROM in_out_return "
+			   "WHERE in_out_return.type=%s "
 			   "ORDER BY date;")
-		curs.execute(sql, var_op.get())
-		results = curs.fetchall()
 
-		# 先清空，再给表格中添加数据
-		for item in form.get_children():
-			form.delete(item)
-		for i in range(len(results)):
-			form.insert('', i + 1, values=list(results[i]))
+		curs.execute(sql, var_op.get())
+
+		results = curs.fetchall()
+		if len(results) != 0:
+			# 先清空，再给表格中添加数据
+			for item in form.get_children():
+				form.delete(item)
+			for i in range(len(results)):
+				form.insert('', i + 1, values=list(results[i]))
+		elif len(results) == 0:
+			for item in form.get_children():
+				form.delete(item)
+			messagebox.showinfo(title='Notice', message="无记录！")
 
 	var_op = StringVar()
 	var_op.set('采购入库')
@@ -366,8 +411,8 @@ def query_op_click():
 	fm_in = Frame(window_in)
 	fm_in.pack(side=TOP, padx=50, pady=10)
 	Radiobutton(fm_in, text='采购入库', variable=var_op, value='采购入库', command=query_op).pack(side=LEFT)
-	Radiobutton(fm_in, text='借用设备', variable=var_op, value='借用设备', command=query_op).pack(side=LEFT)
-	Radiobutton(fm_in, text='归还设备', variable=var_op, value='归还设备', command=query_op).pack(side=LEFT)
+	Radiobutton(fm_in, text='借用设备', variable=var_op, value='借出', command=query_op).pack(side=LEFT)
+	Radiobutton(fm_in, text='归还设备', variable=var_op, value='归还', command=query_op).pack(side=LEFT)
 
 	# 创建表格
 	form = ttk.Treeview(window_in, show="headings",
