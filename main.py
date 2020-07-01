@@ -11,7 +11,7 @@ curs = conn.cursor()
 
 main_window = Tk()
 main_window.title('仓库数据管理系统')
-main_window.geometry('850x720')
+main_window.geometry('850x700')
 main_window.resizable(False, False)
 
 Label(main_window, text='欢迎使用仓库管理系统', font=('', 34)).pack(side=TOP, pady=35)
@@ -56,12 +56,16 @@ def insert_click():
 	window_in.title('设备登记')
 	window_in.resizable(False, False)
 
-	def query_d_code():
+	def insert():
 		if var_d_name.get().strip() != '' and var_d_code.get().strip() != '':
 			try:
 				sql = "INSERT INTO d_code VALUES (%s,%s);"
 				values = (var_d_code.get(), var_d_name.get())
 				curs.execute(sql, values)
+				# 在device中新建表项 trigger已经实现
+				# sql = "INSERT INTO device VALUES (%s,0,0);"
+				# values = (var_d_code.get())
+				# curs.execute(sql, values)
 				conn.commit()
 			except Exception as e:
 				# print(e)
@@ -91,7 +95,7 @@ def insert_click():
 	Entry(fm_in, textvariable=var_d_code, font=('', 14)).grid(row=0, column=1, padx=10)
 	Label(fm_in, text='新设备名称:', font=('', 14)).grid(row=1, column=0, pady=5)
 	Entry(fm_in, textvariable=var_d_name, font=('', 14)).grid(row=1, column=1)
-	Button(fm_in, text='添加', font=('', 12), command=query_d_code).grid(row=0, rowspan=2, column=2, pady=5, sticky=N + S)
+	Button(fm_in, text='添加', font=('', 12), command=insert).grid(row=0, rowspan=2, column=2, pady=5, sticky=N + S)
 
 	# 创建表格
 	form = ttk.Treeview(window_in, show="headings", columns=('code', 'name'))
@@ -105,7 +109,7 @@ def insert_click():
 	form.heading('code', text='设备编号')
 	form.heading('name', text='设备名称')
 
-	query_d_code()
+	insert()
 
 
 def in_click():
@@ -255,7 +259,7 @@ def return_click():
 			values = (ecode.get(), ereturn_depart.get())
 			curs.execute(sql, values)
 			results = curs.fetchall()
-			# 如果只有归还没有借出，或者借出比归还更少，则回滚
+			# 如果只有归还没有借出，或者借出小于归还，则回滚
 			if len(results) == 1 or results[0][0] == '借用设备':
 				conn.rollback()
 				messagebox.showerror(title='Failed', message="提交失败,该部门归还数大于已借出数！")
@@ -454,7 +458,7 @@ def on_closing():
 
 fm = Frame(main_window)
 fm.pack(side=TOP)
-button_style = {'font': "(\'\',30)", 'width': 30, 'height': 5}
+button_style = {'font': "(\'\',30)", 'width': 30, 'height': 4}
 
 Button(fm, text='当前库存', command=now_d_click, **button_style).grid(row=0, column=0, padx=20, pady=18)
 Button(fm, text='设备登记', command=insert_click, **button_style).grid(row=0, column=1, padx=20, pady=18)

@@ -4,13 +4,19 @@ import pymysql
 
 from str import DBUser, DBPw
 
+# 连接数据库
 conn = pymysql.connect(host='localhost', port=3306, user=DBUser, passwd=DBPw, database='warehouse')
 curs = conn.cursor()
 
-# TABLE
+# CREATE TABLE
 curs.execute("CREATE TABLE IF NOT EXISTS d_code("
 			 "code VARCHAR(6) PRIMARY KEY,"
 			 "name VARCHAR(20) NOT NULL UNIQUE);")
+
+curs.execute("CREATE TABLE IF NOT EXISTS device("
+			 "code VARCHAR(6) PRIMARY KEY REFERENCES d_code(code),"
+			 "now_number SMALLINT UNSIGNED NULL,"
+			 "total_number SMALLINT UNSIGNED NULL);")
 
 curs.execute("CREATE TABLE IF NOT EXISTS d_in("
 			 "code VARCHAR(6) NOT NULL,"
@@ -32,11 +38,6 @@ curs.execute("CREATE TABLE IF NOT EXISTS d_out("
 			 "submitdate timestamp PRIMARY KEY DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
 			 "FOREIGN KEY (code) REFERENCES d_code(code));")
 
-curs.execute("CREATE TABLE IF NOT EXISTS device("
-			 "code VARCHAR(6) PRIMARY KEY REFERENCES d_code(code),"
-			 "now_number SMALLINT UNSIGNED NULL,"
-			 "total_number SMALLINT UNSIGNED NULL);")
-
 curs.execute("CREATE TABLE IF NOT EXISTS d_return("
 			 "code VARCHAR(6) NOT NULL,"
 			 "return_date DATE,"
@@ -45,7 +46,7 @@ curs.execute("CREATE TABLE IF NOT EXISTS d_return("
 			 "submitdate timestamp PRIMARY KEY DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
 			 "FOREIGN KEY (code) REFERENCES d_code(code));")
 
-# VIEW
+# CREATE VIEW
 curs.execute("CREATE OR REPLACE VIEW in_out_return(code,name,type,date,number,department,provider) AS "
 			 "SELECT OP.code,d_code.name,'采购入库',OP.in_date,OP.in_number,'NONE',OP.provider "
 			 "FROM d_in OP,d_code "
@@ -59,7 +60,7 @@ curs.execute("CREATE OR REPLACE VIEW in_out_return(code,name,type,date,number,de
 			 "FROM d_return OP,d_code "
 			 "WHERE OP.code=d_code.code ;")
 
-# TRIGGER
+# CREATE TRIGGER
 curs.execute("CREATE TRIGGER TRI_d_out_device "
 			 "AFTER INSERT ON d_out "
 			 "FOR EACH ROW "
@@ -78,28 +79,32 @@ curs.execute("CREATE TRIGGER TRI_d_in_device "
 			 "UPDATE device SET now_number = now_number + NEW.in_number , total_number = total_number + NEW.in_number"
 			 "				WHERE code = NEW.code;")
 
-# curs.execute("insert into d_out "
-# 			 "values('ag','财务','2012-03-09','刘德华',50,'张学友');")
-# curs.execute("insert into d_return "
-# 			 "values('ag','2012-03-10',50,'财务');")
-# 提交之后才会保存本地
-# conn.commit()
+curs.execute("CREATE TRIGGER TRI_d_insert_device "
+			 "AFTER INSERT ON d_code "
+			 "FOR EACH ROW "
+			 "INSERT INTO device VALUES (new.code,0,0);")
 
 # test trigger
 sql = "INSERT INTO d_code VALUES(%s,%s);"
 data = [
 	('001', 'Macbook Pro'),
 	('002', 'iPad Pro 2020'),
-	('003', 'iPhone 11 Max Pro')
+	('003', 'iPhone 11 Max Pro'),
+	('004', 'HUAWEI mate 30 Pro'),
+	('005', 'HUAWEI P40 Pro'),
+	('006', 'XIAOMI 10')
 ]
 # 拼接并执行sql语句
-curs.executemany(sql, data)
-sql = "INSERT INTO device VALUES(%s,%s,%s);"
-data = [
-	('001', 0, 0),
-	('002', 0, 0),
-	('003', 0, 0)
-]
+# curs.executemany(sql, data)
+# sql = "INSERT INTO device VALUES(%s,%s,%s);"
+# data = [
+# 	('001', 0, 0),
+# 	('002', 0, 0),
+# 	('003', 0, 0),
+# 	('004', 0, 0),
+# 	('005', 0, 0),
+# 	('006', 0, 0)
+# ]
 # 拼接并执行sql语句
 curs.executemany(sql, data)
 # 提交之后才会保存本地
@@ -114,7 +119,7 @@ results = curs.fetchall()
 print("DEVICE INFO ", end="")
 print(results)
 
-# in
+# # test in
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
 print("\nBEFORE IN ", end="")
@@ -131,6 +136,18 @@ curs.execute(
 	"INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) "
 	"VALUES('003','2020-06-09','Apple',600,9999,'Tony');")
 time.sleep(1)
+curs.execute(
+	"INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) "
+	"VALUES('004','2020-07-01','Huawei',600,4999,'Tony');")
+time.sleep(1)
+curs.execute(
+	"INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) "
+	"VALUES('005','2020-07-01','Huawei',600,6999,'Tony');")
+time.sleep(1)
+curs.execute(
+	"INSERT INTO d_in(code, in_date, provider, in_number, price, buyer) "
+	"VALUES('006','2020-07-01','小米',600,5999,'Tony');")
+time.sleep(1)
 # 提交
 conn.commit()
 curs.execute("SELECT * FROM device;")
@@ -138,7 +155,7 @@ results = curs.fetchall()
 print("AFTER IN ", end="")
 print(results)
 
-# # out
+# # test out
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
 print("\nBEFORE OUT ", end="")
@@ -152,7 +169,7 @@ results = curs.fetchall()
 print("AFTER OUT ", end="")
 print(results)
 
-# # return
+# # test return
 curs.execute("SELECT * FROM device;")
 results = curs.fetchall()
 print("\nBEFORE RETURN ", end="")
