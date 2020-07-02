@@ -28,7 +28,9 @@ def now_d_click():
 				 "FROM device,d_code "
 				 "WHERE device.code = d_code.code;")
 	results = curs.fetchall()
-
+	if len(results) == 0:
+		messagebox.showinfo(title="Notice",message="仓库是空的！")
+		window_in.destroy()
 	# 创建表格
 	form = ttk.Treeview(window_in, show="headings", columns=('code', 'name', 'now_number', 'total_number'))
 	form.pack(side=TOP, pady=10)
