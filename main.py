@@ -29,7 +29,7 @@ def now_d_click():
 				 "WHERE device.code = d_code.code;")
 	results = curs.fetchall()
 	if len(results) == 0:
-		messagebox.showinfo(title="Notice",message="仓库是空的！")
+		messagebox.showinfo(title="Notice", message="仓库是空的！")
 		window_in.destroy()
 	# 创建表格
 	form = ttk.Treeview(window_in, show="headings", columns=('code', 'name', 'now_number', 'total_number'))
@@ -397,7 +397,7 @@ def query_dp_click():
 def query_op_click():
 	window_in = Toplevel(main_window)
 	window_in.geometry('800x400')
-	window_in.title('按操作类型查询记录出入库记录')
+	window_in.title('按操作类型查询出入库记录')
 	window_in.resizable(False, False)
 
 	def query_op():
